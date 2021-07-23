@@ -434,6 +434,20 @@ func (p *EdwardsPoint) double(t *EdwardsPoint) *EdwardsPoint {
 	return p.setCompleted(sum.Double(pProjective.SetEdwards(t)))
 }
 
+// InternalSetXY sets the EdwardsPoints from the raw x and y coordinates.
+//
+// WARNING: This function is internal and existes entirely to get around
+// the lack of a `pub(crate)` equivalent in the language, and should not
+// be used by anybody (field is an internal package for a reason).
+func (p *EdwardsPoint) InternalSetXY(x, y *field.FieldElement) *EdwardsPoint {
+	p.inner.X.Set(x)
+	p.inner.Y.Set(y)
+	p.inner.Z.One()
+	p.inner.T.Mul(x, y)
+
+	return p
+}
+
 // mulByPow2 sets `p = [2^k]t` by successive doublings, and returns p.  Requires `k > 0`.
 func (p *EdwardsPoint) mulByPow2(t *EdwardsPoint, k uint) *EdwardsPoint {
 	if k == 0 {

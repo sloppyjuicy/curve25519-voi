@@ -367,6 +367,37 @@ func (fe *FieldElement) SetBytes(in []byte) (*FieldElement, error) {
 	return fe, nil
 }
 
+// SetBytesWide loads a field element from a 384-bit little-endian input.
+func (fe *FieldElement) SetBytesWide(in []byte) (*FieldElement, error) {
+	if len(in) != FieldElementWideSize {
+		return nil, fmt.Errorf("internal/field/u64: unexpected input size")
+	}
+
+	var lo, hi FieldElement
+	if _, err := lo.SetBytes(in[:FieldElementSize]); err != nil {
+		return nil, fmt.Errorf("internal/field/u64: failed to deserialize lo: %w", err)
+	}
+
+	// Zero-extend the high 128 bits.
+	var hiBytes [FieldElementSize]byte
+	copy(hiBytes[:], in[FieldElementSize:])
+	if _, err := hi.SetBytes(hiBytes[:]); err != nil {
+		return nil, fmt.Errorf("internal/field/u64: failed to deserialize hi: %w", err)
+	}
+
+	lo.inner[0] += uint64(in[31]>>7) * 19 // 256th bit
+
+	lo.inner[0] += 2 * 19 * hi.inner[0]
+	lo.inner[1] += 2 * 19 * hi.inner[1]
+	lo.inner[2] += 2 * 19 * hi.inner[2]
+	lo.inner[3] += 2 * 19 * hi.inner[3]
+	lo.inner[4] += 2 * 19 * hi.inner[4]
+
+	fe.reduce(&lo.inner)
+
+	return fe, nil
+}
+
 // ToBytes packs the field element into 32 bytes.  The encoding is canonical.
 func (fe *FieldElement) ToBytes(out []byte) error {
 	if len(out) != FieldElementSize {
