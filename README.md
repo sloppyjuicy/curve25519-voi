@@ -21,10 +21,10 @@ does not escape this author.
  * curve: A mid-level API in the spirit of curve25519-dalek.
  * primitives/x25519: A X25519 implementation like `x/crypto/curve25519`.
  * primitives/ed25519: A Ed25519 implementation like `crypto/ed25519`.
- * primitives/ed25519/extra/ecvrf: A implementation of the "Verifiable Random Functions" draft (v10).
+ * primitives/ed25519/extra/ecvrf: A implementation of the "Verifiable Random Functions" draft (v10, v13).
  * primitives/sr25519: A sr25519 implementation like `https://github.com/w3f/schnorrkel`.
  * primitives/merlin: A Merlin transcript implementation.
- * primitives/h2c: A implementation of the "Hashing to Elliptic Curves" draft (v14).
+ * primitives/h2c: A implementation of the "Hashing to Elliptic Curves" draft (v16).
 
 #### Ed25519 verification semantics
 
@@ -81,8 +81,14 @@ the appropriate special cases to make `math/bits.Mul64`/`math/bits.Add64`
 perform well.
 
  * 64-bit: `amd64`, `arm64`, `ppc64le`, `ppc64`, `s390x`
- * 32-bit: `386`, `arm`, `mips`, `mipsle`, `mips64`
+ * 32-bit: `386`, `arm`, `mips`, `mipsle`, `wasm`, `mips64`, `mips64le`, `riscv64`, `loong64`
  * Unsupported: Everything else.
+
+**WARNING**: As a concession to the target's growing popularity, the
+`wasm` target is supported using the 32-bit backend, however the
+WebAssembly specification does not mandate that any opcodes are
+constant time, making it difficult to provide assurances related to
+timing side-channels.
 
 The lack of a generic "just use 32-bit" fallback can be blamed on
 the Go developers rejecting [adding build tags for bit-width][3].
